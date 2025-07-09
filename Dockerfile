@@ -39,6 +39,5 @@ COPY --from=builder /app/static ./static
 
 # 4) Expose & run
 EXPOSE 5711
-CMD ["uv", "run", "uvicorn", "main:app",
-     "--host", "0.0.0.0", "--port", "5711", "--workers", "4"]
+CMD ["uv", "run", "uvicorn", "main:app","--host", "0.0.0.0", "--port", "5711", "--workers", "4"]
 
