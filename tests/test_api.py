@@ -1,30 +1,36 @@
 # tests/test_api.py
 import os
+import tempfile
 import pytest
 from fastapi.testclient import TestClient
 
-# ensure our app picks up the test key
+# 1) Create a temp file for SQLite and point DATABASE_URL at it
+_dbf = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+os.environ["DATABASE_URL"] = f"sqlite:///{_dbf.name}"
 os.environ["MY_API_KEY"] = "testkey123"
 
-from main import app, AcceptedInvoiceNumber, AcceptedVendorName, engine, SQLModel
+# 2) Now import your app & models
+from main import app, engine, SQLModel, AcceptedInvoiceNumber, AcceptedVendorName
 
 
-# Re-create a fresh SQLite in-memory for tests
+# 3) Fixture to reset the schema before each test
 @pytest.fixture(autouse=True)
-def init_db(monkeypatch):
-    # point DATABASE_URL at a temp file or in-memory DB
-    monkeypatch.setenv("DATABASE_URL", "sqlite:///:memory:")
-    # rebuild the engine/session based on the new env
+def init_db():
+    # Drop any existing tables, then recreate them
+    SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
     yield
-    SQLModel.metadata.drop_all(engine)
+    # (we don’t delete the file here so each test can open it;
+    # the file cleanup happens automatically when the container/VM goes away)
 
 
+# 4) TestClient fixture
 @pytest.fixture
 def client():
     return TestClient(app)
 
 
+# 5) Tests
 def test_healthz(client):
     r = client.get("/healthz")
     assert r.status_code == 200
@@ -77,3 +83,4 @@ def test_vendor_crud(client, name):
     )
     assert r2.status_code == 200
     assert r2.json()["accepted_vendor_name"] == newval
+
