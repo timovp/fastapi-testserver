@@ -29,6 +29,6 @@ COPY . .
 ##################################################
 # 6) Expose and run
 ##################################################
-EXPOSE 8000
-CMD ["uv", "run", "uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4"]
+EXPOSE 5711
+CMD ["uv", "run", "uvicorn main:app --host 0.0.0.0 --port 5711 --workers 4"]
 
