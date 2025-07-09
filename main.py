@@ -131,7 +131,7 @@ def update_invoice(
     dependencies=[Depends(get_api_key)],
 )
 def read_vendor_names(session: Session = Depends(get_session)):
-    return session.exec(select(AcceptedInvoiceNumber)).all()
+    return session.exec(select(AcceptedVendorName)).all()
 
 
 @app.post(
