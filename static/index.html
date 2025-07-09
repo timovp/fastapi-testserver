@@ -26,7 +26,7 @@
       await fetchList("vendor");
     }
 
-    async function fetchList(type) {
+   async function fetchList(type) {
   const ul = document.getElementById(type + "-list");
   ul.innerHTML = "<li>Loading...</li>";
 
@@ -68,6 +68,7 @@
     ul.innerHTML = `<li>Error loading: ${err.message}</li>`;
   }
 }
+ 
 
     async function addItem(type) {
       const field = document.getElementById("new-" + type);
