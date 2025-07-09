@@ -27,31 +27,47 @@
     }
 
     async function fetchList(type) {
-      const ul = document.getElementById(type + "-list");
-      ul.innerHTML = "<li>Loading...</li>";
-      try {
-        const res = await fetch(`${base}/accepted_${type}_names`.replace(/_names$/, type + "_numbers"), { headers });
-        const data = await res.json();
-        ul.innerHTML = "";
-        data.forEach(item => {
-          const li = document.createElement("li");
-          li.textContent = item[`accepted_${type}_name`] || item[`accepted_${type}_number`];
-          // Edit button
-          const e = document.createElement("button");
-          e.textContent = "✏️";
-          e.onclick = () => editItem(type, item.id);
-          // Delete button
-          const d = document.createElement("button");
-          d.textContent = "🗑️";
-          d.onclick = () => deleteItem(type, item.id);
-          li.appendChild(e);
-          li.appendChild(d);
-          ul.appendChild(li);
-        });
-      } catch (err) {
-        ul.innerHTML = `<li>Error loading: ${err.message}</li>`;
-      }
-    }
+  const ul = document.getElementById(type + "-list");
+  ul.innerHTML = "<li>Loading...</li>";
+
+  // Choose endpoint and field name based on type
+  let url, field;
+  if (type === "invoice") {
+    url   = `${base}/accepted_invoice_numbers`;
+    field = "accepted_invoice_number";
+  } else {  // vendor
+    url   = `${base}/accepted_vendor_names`;
+    field = "accepted_vendor_name";
+  }
+
+  try {
+    const res  = await fetch(url, { headers });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const data = await res.json();
+
+    ul.innerHTML = "";
+    data.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item[field];
+
+      // Edit button
+      const e = document.createElement("button");
+      e.textContent = "✏️";
+      e.onclick = () => editItem(type, item.id);
+
+      // Delete button
+      const d = document.createElement("button");
+      d.textContent = "🗑️";
+      d.onclick = () => deleteItem(type, item.id);
+
+      li.appendChild(e);
+      li.appendChild(d);
+      ul.appendChild(li);
+    });
+  } catch (err) {
+    ul.innerHTML = `<li>Error loading: ${err.message}</li>`;
+  }
+}
 
     async function addItem(type) {
       const field = document.getElementById("new-" + type);
