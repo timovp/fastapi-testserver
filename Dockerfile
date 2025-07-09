@@ -1,61 +1,34 @@
 # syntax=docker/dockerfile:1
 
 ##################################################
-# 1) Base image: pinned and slim
+# 1) Base image with uv pre-installed
 ##################################################
-FROM python:3.11-slim-buster
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
 ##################################################
-# 2) Create a non-root user
+# 2) Set workdir
 ##################################################
-RUN groupadd --gid 1000 appuser \
- && useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
+WORKDIR /app
 
 ##################################################
-# 3) Environment tweaks
+# 3) Copy only lockfile + manifest
 ##################################################
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# This creates a cacheable layer for your deps
+COPY uv.lock pyproject.toml ./
 
 ##################################################
-# 4) Set working directory
+# 4) Install exactly what's in your lockfile
 ##################################################
-WORKDIR /home/appuser/app
+RUN uv sync --locked   # ← will error out if uv.lock is stale :contentReference[oaicite:0]{index=0}
 
 ##################################################
-# 5) Install dependencies
-#    - if you use pip/requirements.txt
+# 5) Copy the rest of your application code
 ##################################################
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# If you’re using Poetry instead, swap in:
-# COPY pyproject.toml poetry.lock ./
-# RUN pip install --no-cache-dir poetry \
-#  && poetry config virtualenvs.create false \
-#  && poetry install --no-dev
+COPY . .
 
 ##################################################
-# 6) Copy your application code
+# 6) Expose and run
 ##################################################
-COPY --chown=appuser:appuser . .
-
-##################################################
-# 7) Switch to non-root user
-##################################################
-USER appuser
-
-##################################################
-# 8) Expose internal port
-##################################################
-EXPOSE 5711
-
-##################################################
-# 9) Run the app with Gunicorn + Uvicorn workers
-##################################################
-CMD ["gunicorn", "main:app", \
-     "-k", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:5711", \
-     "--workers", "4", \
-     "--keep-alive", "30"]
+EXPOSE 8000
+CMD ["uv", "run", "uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4"]
 
