@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quick CRUD UI</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2em auto; }
+    section { margin-bottom: 2em; }
+    ul { list-style: none; padding: 0; }
+    li { margin: .5em 0; }
+    button { margin-left: .5em; }
+  </style>
+</head>
+<body>
+  <h1>Manage Your Lists</h1>
+  <script>
+    // Ask once for your API key
+    const API_KEY = prompt("Enter your API key:", "");
+
+    const base = "https://testdb.vanpraagh.nl";
+    const headers = { "Content-Type": "application/json", "X-API-KEY": API_KEY };
+
+    // Fetch & render both lists
+    async function fetchAll() {
+      await fetchList("invoice");
+      await fetchList("vendor");
+    }
+
+    async function fetchList(type) {
+      const ul = document.getElementById(type + "-list");
+      ul.innerHTML = "<li>Loading...</li>";
+      try {
+        const res = await fetch(`${base}/accepted_${type}_names`.replace(/_names$/, type + "_numbers"), { headers });
+        const data = await res.json();
+        ul.innerHTML = "";
+        data.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = item[`accepted_${type}_name`] || item[`accepted_${type}_number`];
+          // Edit button
+          const e = document.createElement("button");
+          e.textContent = "✏️";
+          e.onclick = () => editItem(type, item.id);
+          // Delete button
+          const d = document.createElement("button");
+          d.textContent = "🗑️";
+          d.onclick = () => deleteItem(type, item.id);
+          li.appendChild(e);
+          li.appendChild(d);
+          ul.appendChild(li);
+        });
+      } catch (err) {
+        ul.innerHTML = `<li>Error loading: ${err.message}</li>`;
+      }
+    }
+
+    async function addItem(type) {
+      const field = document.getElementById("new-" + type);
+      const val = field.value.trim();
+      if (!val) return alert("Enter a value");
+      const body = {};
+      body[`accepted_${type}_name`] = body[`accepted_${type}_number`] = val;
+      const url = (type === "invoice")
+        ? `${base}/accepted_invoice_numbers`
+        : `${base}/accepted_vendor_names`;
+      try {
+        await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+        field.value = "";
+        fetchAll();
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function editItem(type, id) {
+      const newVal = prompt("New value:");
+      if (newVal == null) return;
+      const param = (type === "invoice") ? "invoice_number" : "vendor_name";
+      const url = `${base}/accepted_${type}_names/${id}`.replace(/_names/, type + (type==="invoice"? "_numbers": "_names"));
+      const q = `?${param}=` + encodeURIComponent(newVal);
+      await fetch(url + q, { method: "PUT", headers });
+      fetchAll();
+    }
+
+    async function deleteItem(type, id) {
+      // Quick-and-dirty: update to empty string to “remove” 
+      if (!confirm("Really delete?")) return;
+      const url = `${base}/accepted_${type}_names/${id}`.replace(/_names/, type + (type==="invoice"? "_numbers": "_names"));
+      const param = (type === "invoice") ? "invoice_number" : "vendor_name";
+      const q = `?${param}=`;
+      await fetch(url + q, { method: "PUT", headers });
+      fetchAll();
+    }
+
+    window.onload = fetchAll;
+  </script>
+
+  <section>
+    <h2>Invoice Numbers</h2>
+    <ul id="invoice-list"></ul>
+    <input id="new-invoice" placeholder="New invoice number">
+    <button onclick="addItem('invoice')">Add Invoice</button>
+  </section>
+
+  <section>
+    <h2>Vendor Names</h2>
+    <ul id="vendor-list"></ul>
+    <input id="new-vendor" placeholder="New vendor name">
+    <button onclick="addItem('vendor')">Add Vendor</button>
+  </section>
+</body>
+</html>
+

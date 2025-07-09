@@ -6,6 +6,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security.api_key import APIKeyHeader
 from sqlmodel import Field, SQLModel, create_engine, Session, select
+from fastapi.staticfiles import StaticFiles
+
+# serve files from ./static as your root
 
 #
 # ─── API‐KEY SETUP ──────────────────────────────────────────────────────────────
@@ -41,6 +44,11 @@ class AcceptedInvoiceNumber(SQLModel, table=True):
     accepted_invoice_number: str
 
 
+class AcceptedVendorName(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    accepted_vendor_name: str
+
+
 def get_session():
     with Session(engine) as session:
         yield session
@@ -60,6 +68,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+
 #
 # ─── CRUD ENDPOINTS ─────────────────────────────────────────────────────────────
 #
@@ -68,7 +79,7 @@ app = FastAPI(lifespan=lifespan)
     response_model=List[AcceptedInvoiceNumber],
     dependencies=[Depends(get_api_key)],
 )
-def read_items(session: Session = Depends(get_session)):
+def read_invoice_numbers(session: Session = Depends(get_session)):
     return session.exec(select(AcceptedInvoiceNumber)).all()
 
 
@@ -78,11 +89,13 @@ def read_items(session: Session = Depends(get_session)):
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(get_api_key)],
 )
-def create_item(item: AcceptedInvoiceNumber, session: Session = Depends(get_session)):
-    session.add(item)
+def create_invoice_numbers(
+    invoice_number: AcceptedInvoiceNumber, session: Session = Depends(get_session)
+):
+    session.add(invoice_number)
     session.commit()
-    session.refresh(item)
-    return item
+    session.refresh(invoice_number)
+    return invoice_number
 
 
 @app.put(
@@ -101,6 +114,48 @@ def update_invoice(
     session.commit()
     session.refresh(existing_invoice)
     return existing_invoice
+
+
+@app.get(
+    "/accepted_vendor_names",
+    response_model=List[AcceptedVendorName],
+    dependencies=[Depends(get_api_key)],
+)
+def read_vendor_names(session: Session = Depends(get_session)):
+    return session.exec(select(AcceptedInvoiceNumber)).all()
+
+
+@app.post(
+    "/accepted_vendor_names",
+    response_model=AcceptedVendorName,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_api_key)],
+)
+def create_vendor_name(
+    vendor_name: AcceptedVendorName, session: Session = Depends(get_session)
+):
+    session.add(vendor_name)
+    session.commit()
+    session.refresh(vendor_name)
+    return vendor_name
+
+
+@app.put(
+    "/accepted_vendor_names/{vendor_id}",
+    response_model=AcceptedVendorName,
+    dependencies=[Depends(get_api_key)],
+)
+def update_vendor_name(
+    vendor_id: int, vendor_name: str, session: Session = Depends(get_session)
+):
+    existing_vendor = session.get(AcceptedVendorName, vendor_id)
+    if not existing_vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    existing_vendor.accepted_vendor_name = vendor_name
+    session.add(existing_vendor)
+    session.commit()
+    session.refresh(existing_vendor)
+    return existing_vendor
 
 
 @app.get("/healthz", include_in_schema=False)
