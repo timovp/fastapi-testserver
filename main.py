@@ -28,7 +28,7 @@ async def get_api_key(api_key: str = Depends(api_key_header)):
 #
 # ─── DATABASE MODEL & ENGINE ───────────────────────────────────────────────────
 #
-DATABASE_URL = "sqlite:///app/data/items.db"
+DATABASE_URL = "sqlite:////app/data/items.db"
 engine = create_engine(
     DATABASE_URL,
     echo=True,
