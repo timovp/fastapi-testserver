@@ -10,11 +10,11 @@ services:
     env_file:
       - .env                  # contains at least MY_API_KEY=… and (optionally) DATABASE_URL=…
     ports:
-      - "8000:8000"           # publish so your host‐nginx can reach it
+      - "5711:5711"           # publish so your host‐nginx can reach it
     volumes:
       - ./data:/app/data      # persist your SQLite file (see note below)
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:5711/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
