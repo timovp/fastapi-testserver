@@ -7,6 +7,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security.api_key import APIKeyHeader
 from sqlmodel import Field, SQLModel, create_engine, Session, select
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # serve files from ./static as your root
 
@@ -68,7 +69,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# serve your UI assets under /static
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# serve index.html at root for your SPA
+
+
+@app.get("/")
+async def get_index():
+    return FileResponse("static/index.html")
 
 
 #
