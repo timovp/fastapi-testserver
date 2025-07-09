@@ -48,14 +48,14 @@ USER appuser
 ##################################################
 # 8) Expose internal port
 ##################################################
-EXPOSE 8000
+EXPOSE 5711
 
 ##################################################
 # 9) Run the app with Gunicorn + Uvicorn workers
 ##################################################
 CMD ["gunicorn", "main:app", \
      "-k", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:8000", \
+     "--bind", "0.0.0.0:5711", \
      "--workers", "4", \
      "--keep-alive", "30"]
 
