@@ -38,7 +38,7 @@ COPY --from=builder /app/static ./static
 # (and any other folders, e.g. Dockerfile, compose.yml, etc.)
 
 # 4) Expose & run
-EXPOSE 8000
+EXPOSE 5711
 CMD ["uv", "run", "uvicorn", "main:app",
-     "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+     "--host", "0.0.0.0", "--port", "5711", "--workers", "4"]
 
