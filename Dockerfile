@@ -1,34 +1,18 @@
-# syntax=docker/dockerfile:1
-
-##################################################
-# 1) Base image with uv pre-installed
-##################################################
+# 1) Start from Astral’s uv image
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
-##################################################
-# 2) Set workdir
-##################################################
 WORKDIR /app
 
-##################################################
-# 3) Copy only lockfile + manifest
-##################################################
-# This creates a cacheable layer for your deps
-COPY uv.lock pyproject.toml ./
+# 2) Copy only pyproject.toml & uv.lock
+COPY pyproject.toml uv.lock ./
 
-##################################################
-# 4) Install exactly what's in your lockfile
-##################################################
-RUN uv sync --locked   # ← will error out if uv.lock is stale :contentReference[oaicite:0]{index=0}
+# 3) Install exactly what's locked
+RUN uv sync --locked
 
-##################################################
-# 5) Copy the rest of your application code
-##################################################
+# 4) Copy your app code
 COPY . .
 
-##################################################
-# 6) Expose and run
-##################################################
+# 5) Expose & run via uv run
 EXPOSE 5711
-CMD ["uv", "run", "uvicorn main:app --host 0.0.0.0 --port 5711 --workers 4"]
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5711", "--workers", "4"]
 
