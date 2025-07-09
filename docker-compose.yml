@@ -8,11 +8,11 @@ services:
     container_name: fastapi_app
     restart: unless-stopped
     env_file:
-      - .env                  # contains at least MY_API_KEY=… and (optionally) DATABASE_URL=…
+      - .env                  # contains at least MY_API_KEY=… 
     ports:
-      - "5711:5711"           # publish so your host‐nginx can reach it
+      - "5711:5711"           # publish so host‐nginx can reach it
     volumes:
-      - ./data:/app/data      # persist your SQLite file (see note below)
+      - ./data:/app/data      # persist SQLite file (see note below)
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5711/healthz"]
       interval: 30s

@@ -9,7 +9,7 @@ from sqlmodel import Field, SQLModel, create_engine, Session, select
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-# serve files from ./static as your root
+# serve files from ./static as root
 
 #
 # ─── API‐KEY SETUP ──────────────────────────────────────────────────────────────
@@ -69,10 +69,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-# serve your UI assets under /static
+# serve UI assets under /static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# serve index.html at root for your SPA
+# serve index.html at root for SPA
 
 
 @app.get("/")
