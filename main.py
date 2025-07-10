@@ -3,7 +3,7 @@ import os
 from typing import Optional, List
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Response
 from fastapi.security.api_key import APIKeyHeader
 from sqlmodel import Field, SQLModel, create_engine, Session, select
 from fastapi.staticfiles import StaticFiles
@@ -164,6 +164,34 @@ def update_vendor_name(
     session.commit()
     session.refresh(existing_vendor)
     return existing_vendor
+
+
+@app.delete(
+    "/accepted_invoice_numbers/{invoice_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_api_key)],
+)
+def delete_invoice(invoice_id: int, session: Session = Depends(get_session)):
+    invoice = session.get(AcceptedInvoiceNumber, invoice_id)
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+    session.delete(invoice)
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.delete(
+    "/accepted_vendor_names/{vendor_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(get_api_key)],
+)
+def delete_vendor(vendor_id: int, session: Session = Depends(get_session)):
+    vendor = session.get(AcceptedVendorName, vendor_id)
+    if not vendor:
+        raise HTTPException(status_code=404, detail="Vendor not found")
+    session.delete(vendor)
+    session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.get("/healthz", include_in_schema=False)

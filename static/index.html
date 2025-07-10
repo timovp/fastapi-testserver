@@ -98,15 +98,28 @@
       fetchAll();
     }
 
+
     async function deleteItem(type, id) {
-      // Quick-and-dirty: update to empty string to “remove” 
       if (!confirm("Really delete?")) return;
-      const url = `${base}/accepted_${type}_names/${id}`.replace(/_names/, type + (type==="invoice"? "_numbers": "_names"));
-      const param = (type === "invoice") ? "invoice_number" : "vendor_name";
-      const q = `?${param}=`;
-      await fetch(url + q, { method: "PUT", headers });
-      fetchAll();
-    }
+
+      // pick correct endpoint
+      const url = type === "invoice"
+        ? `${base}/accepted_invoice_numbers/${id}`
+        : `${base}/accepted_vendor_names/${id}`;
+
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        alert(`Delete failed (${res.status}): ${text}`);
+      } else {
+        fetchAll();
+      }
+}
+
 
     window.onload = fetchAll;
   </script>
