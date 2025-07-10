@@ -168,6 +168,28 @@ def read_accepted_invoice_list(session: Session = Depends(get_session)):
     return [res.accepted_invoice_number for res in res]
 
 
+@app.get(
+    "/vendor_name_lookup",
+    response_model=List[int],
+    dependencies=[Depends(get_api_key)],
+)
+def find_id_for_vendor_name(vendor_name: str, session: Session = Depends(get_session)):
+    res = session.exec(select(AcceptedVendorName)).all()
+    return [res.id for res in res if res.accepted_vendor_name == vendor_name]
+
+
+@app.get(
+    "/invoice_number_lookup",
+    response_model=List[int],
+    dependencies=[Depends(get_api_key)],
+)
+def find_id_for_invoice_number(
+    invoice_number: str, session: Session = Depends(get_session)
+):
+    res = session.exec(select(AcceptedInvoiceNumber)).all()
+    return [res.id for res in res if res.accepted_invoice_number == invoice_number]
+
+
 @app.put(
     "/accepted_vendor_names/{vendor_id}",
     response_model=AcceptedVendorName,

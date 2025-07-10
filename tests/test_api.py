@@ -139,3 +139,39 @@ def test_get_invoice_list(client):
     )
     assert r.status_code == 200
     assert r.json() == ["INV001", "INV002"]
+
+
+def test_lookup_vendor(client):
+    h = {"X-API-KEY": "testkey123", "Content-Type": "application/json"}
+    r1 = client.post(
+        "/accepted_vendor_names", headers=h, json={"accepted_vendor_name": "TestVendor"}
+    )
+    assert r1.status_code == 201
+    vendor_id = r1.json()["id"]
+    r = client.get(
+        "/vendor_name_lookup",
+        headers=h,
+        params={"vendor_name": "TestVendor"},
+    )
+    assert r.status_code == 200
+    assert r.json() == [vendor_id]
+
+
+def test_lookup_invoice(client):
+    h = {"X-API-KEY": "testkey123", "Content-Type": "application/json"}
+    r1 = client.post(
+        "/accepted_invoice_numbers",
+        headers=h,
+        json={"accepted_invoice_number": "INV001"},
+    )
+    assert r1.status_code == 201
+
+    assert r1.status_code == 201
+    invoice_id = r1.json()["id"]
+    r = client.get(
+        "/invoice_number_lookup",
+        headers=h,
+        params={"invoice_number": "INV001"},
+    )
+    assert r.status_code == 200
+    assert r.json() == [invoice_id]
