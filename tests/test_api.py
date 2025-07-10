@@ -64,6 +64,20 @@ def test_invoice_crud(client, num):
     assert r2.status_code == 200
     assert r2.json()["accepted_invoice_number"] == newval
 
+    # DELETE
+    r3 = client.delete(
+        f"/accepted_invoice_numbers/{inv['id']}",
+        headers=h,
+    )
+    assert r3.status_code == 204
+    # Verify deletion
+    r4 = client.get(
+        "/accepted_invoice_numbers",
+        headers=h,
+    )
+    assert r4.status_code == 200
+    assert r4.json() == []
+
 
 @pytest.mark.parametrize("name", ["Acme", "Globex"])
 def test_vendor_crud(client, name):
@@ -83,4 +97,3 @@ def test_vendor_crud(client, name):
     )
     assert r2.status_code == 200
     assert r2.json()["accepted_vendor_name"] == newval
-
