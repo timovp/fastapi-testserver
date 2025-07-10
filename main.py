@@ -148,6 +148,26 @@ def create_vendor_name(
     return vendor_name
 
 
+@app.get(
+    "/accepted_vendor_list",
+    response_model=List[str],
+    dependencies=[Depends(get_api_key)],
+)
+def read_vendor_list(session: Session = Depends(get_session)):
+    res = session.exec(select(AcceptedVendorName)).all()
+    return [res.accepted_vendor_name for res in res]
+
+
+@app.get(
+    "/accepted_invoice_list",
+    response_model=List[str],
+    dependencies=[Depends(get_api_key)],
+)
+def read_accepted_invoice_list(session: Session = Depends(get_session)):
+    res = session.exec(select(AcceptedInvoiceNumber)).all()
+    return [res.accepted_invoice_number for res in res]
+
+
 @app.put(
     "/accepted_vendor_names/{vendor_id}",
     response_model=AcceptedVendorName,

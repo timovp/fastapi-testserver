@@ -97,3 +97,45 @@ def test_vendor_crud(client, name):
     )
     assert r2.status_code == 200
     assert r2.json()["accepted_vendor_name"] == newval
+
+
+def test_get_vendor_list(client):
+    h = {"X-API-KEY": "testkey123", "Content-Type": "application/json"}
+    r1 = client.post(
+        "/accepted_vendor_names", headers=h, json={"accepted_vendor_name": "TestVendor"}
+    )
+    assert r1.status_code == 201
+    r2 = client.post(
+        "/accepted_vendor_names",
+        headers=h,
+        json={"accepted_vendor_name": "TestVendor2"},
+    )
+    assert r2.status_code == 201
+    r = client.get(
+        "/accepted_vendor_list",
+        headers=h,
+    )
+    assert r.status_code == 200
+    assert r.json() == ["TestVendor", "TestVendor2"]
+
+
+def test_get_invoice_list(client):
+    h = {"X-API-KEY": "testkey123", "Content-Type": "application/json"}
+    r1 = client.post(
+        "/accepted_invoice_numbers",
+        headers=h,
+        json={"accepted_invoice_number": "INV001"},
+    )
+    assert r1.status_code == 201
+    r2 = client.post(
+        "/accepted_invoice_numbers",
+        headers=h,
+        json={"accepted_invoice_number": "INV002"},
+    )
+    assert r2.status_code == 201
+    r = client.get(
+        "/accepted_invoice_list",
+        headers=h,
+    )
+    assert r.status_code == 200
+    assert r.json() == ["INV001", "INV002"]
