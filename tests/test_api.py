@@ -175,3 +175,46 @@ def test_lookup_invoice(client):
     )
     assert r.status_code == 200
     assert r.json() == [invoice_id]
+
+
+def test_edit_functionality_endpoints(client):
+    """Test that the edit functionality endpoints work correctly."""
+    h = {"X-API-KEY": "testkey123", "Content-Type": "application/json"}
+    
+    # Test invoice edit
+    r1 = client.post(
+        "/accepted_invoice_numbers",
+        headers=h,
+        json={"accepted_invoice_number": "EDIT-TEST-001"},
+    )
+    assert r1.status_code == 201
+    invoice_data = r1.json()
+    invoice_id = invoice_data["id"]
+    
+    # Test the exact endpoint the frontend should use
+    r2 = client.put(
+        f"/accepted_invoice_numbers/{invoice_id}",
+        headers=h,
+        params={"invoice_number": "EDIT-TEST-001-UPDATED"},
+    )
+    assert r2.status_code == 200
+    assert r2.json()["accepted_invoice_number"] == "EDIT-TEST-001-UPDATED"
+    
+    # Test vendor edit
+    r3 = client.post(
+        "/accepted_vendor_names",
+        headers=h,
+        json={"accepted_vendor_name": "EditTestVendor"},
+    )
+    assert r3.status_code == 201
+    vendor_data = r3.json()
+    vendor_id = vendor_data["id"]
+    
+    # Test the exact endpoint the frontend should use
+    r4 = client.put(
+        f"/accepted_vendor_names/{vendor_id}",
+        headers=h,
+        params={"vendor_name": "EditTestVendor-UPDATED"},
+    )
+    assert r4.status_code == 200
+    assert r4.json()["accepted_vendor_name"] == "EditTestVendor-UPDATED"

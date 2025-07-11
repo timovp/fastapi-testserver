@@ -16,8 +16,11 @@
   <script>
     // Ask once for your API key
     const API_KEY = prompt("Enter your API key:", "");
+    if (!API_KEY) {
+      alert("API key is required to use this application");
+    }
 
-    const base = "https://testdb.vanpraagh.nl";
+    const base = window.location.origin;
     const headers = { "Content-Type": "application/json", "X-API-KEY": API_KEY };
 
     // Fetch & render both lists
@@ -92,10 +95,22 @@
       const newVal = prompt("New value:");
       if (newVal == null) return;
       const param = (type === "invoice") ? "invoice_number" : "vendor_name";
-      const url = `${base}/accepted_${type}_names/${id}`.replace(/_names/, type + (type==="invoice"? "_numbers": "_names"));
+      const url = (type === "invoice") 
+        ? `${base}/accepted_invoice_numbers/${id}`
+        : `${base}/accepted_vendor_names/${id}`;
       const q = `?${param}=` + encodeURIComponent(newVal);
-      await fetch(url + q, { method: "PUT", headers });
-      fetchAll();
+      
+      try {
+        const res = await fetch(url + q, { method: "PUT", headers });
+        if (!res.ok) {
+          const errorText = await res.text();
+          alert(`Edit failed (${res.status}): ${errorText}`);
+          return;
+        }
+        fetchAll();
+      } catch (err) {
+        alert("Error editing item: " + err.message);
+      }
     }
 
 
