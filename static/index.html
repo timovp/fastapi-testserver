@@ -92,7 +92,9 @@
       const newVal = prompt("New value:");
       if (newVal == null) return;
       const param = (type === "invoice") ? "invoice_number" : "vendor_name";
-      const url = `${base}/accepted_${type}_names/${id}`.replace(/_names/, type + (type==="invoice"? "_numbers": "_names"));
+      const url = (type === "invoice") 
+        ? `${base}/accepted_invoice_numbers/${id}`
+        : `${base}/accepted_vendor_names/${id}`;
       const q = `?${param}=` + encodeURIComponent(newVal);
       await fetch(url + q, { method: "PUT", headers });
       fetchAll();
