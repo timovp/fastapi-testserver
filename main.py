@@ -65,15 +65,18 @@ class AcceptedVendorName(SQLModel, table=True):
     accepted_vendor_name: str
 
 
-# Database initialization flag to ensure tables are created only once
+# Thread-safe lock to ensure tables are created only once
+from threading import Lock
+_db_initialized_lock = Lock()
 _db_initialized = False
 
 def get_session():
     global _db_initialized
-    if not _db_initialized:
-        # Ensure tables are created before first database access
-        SQLModel.metadata.create_all(engine)
-        _db_initialized = True
+    with _db_initialized_lock:
+        if not _db_initialized:
+            # Ensure tables are created before first database access
+            SQLModel.metadata.create_all(engine)
+            _db_initialized = True
     
     with Session(engine) as session:
         yield session
