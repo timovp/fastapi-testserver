@@ -32,6 +32,22 @@ async def get_api_key(api_key: str = Depends(api_key_header)):
 #
 # ─── DATABASE MODEL & ENGINE ───────────────────────────────────────────────────
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////app/data/items.db")
+
+# Ensure database directory exists for SQLite databases
+if DATABASE_URL.startswith("sqlite:///"):
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    db_dir = os.path.dirname(db_path)
+    
+    # Try to create the directory if it doesn't exist
+    if db_dir and not os.path.exists(db_dir):
+        try:
+            os.makedirs(db_dir, exist_ok=True)
+        except (PermissionError, OSError):
+            # Fallback to local directory if we can't create the default path
+            fallback_db = "items.db"
+            DATABASE_URL = f"sqlite:///{fallback_db}"
+            print(f"Warning: Cannot create directory {db_dir}, using fallback database: {fallback_db}")
+
 engine = create_engine(
     DATABASE_URL,
     echo=True,
@@ -49,7 +65,16 @@ class AcceptedVendorName(SQLModel, table=True):
     accepted_vendor_name: str
 
 
+# Database initialization flag to ensure tables are created only once
+_db_initialized = False
+
 def get_session():
+    global _db_initialized
+    if not _db_initialized:
+        # Ensure tables are created before first database access
+        SQLModel.metadata.create_all(engine)
+        _db_initialized = True
+    
     with Session(engine) as session:
         yield session
 
