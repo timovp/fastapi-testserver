@@ -130,7 +130,8 @@ class TestStaticFiles:
         response = client.get("/")
         # At minimum, should have some form of caching header
         # (The exact headers depend on StaticFiles implementation)
-        assert len(response.headers) > 1  # Should have more than just content-type
+        assert "cache-control" in response.headers or "etag" in response.headers, \
+            "Expected cache-related headers (e.g., 'cache-control' or 'etag') to be present."
 
     def test_concurrent_static_file_access(self, client):
         """Test that multiple concurrent requests to static files work"""
