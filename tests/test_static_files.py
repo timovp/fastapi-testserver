@@ -79,13 +79,13 @@ class TestStaticFiles:
         """Test that directory traversal attempts are blocked"""
         # Attempt directory traversal
         response = client.get("/static/../main.py")
-        assert response.status_code == 404 or response.status_code == 403
+        assert response.status_code in (404, 403)
 
     def test_static_file_security_no_system_files(self, client):
         """Test that system files cannot be accessed through static mount"""
         # Attempt to access system files
         response = client.get("/static/../../../../etc/passwd")
-        assert response.status_code == 404 or response.status_code == 403
+        assert response.status_code in (404, 403)
 
     def test_root_endpoint_no_auth_required(self, client):
         """Test that root endpoint doesn't require authentication"""
