@@ -62,7 +62,7 @@ print("SUCCESS: Application runs without initial database")
         # Run the test script in a subprocess
         result = subprocess.run(
             ["python", "-c", test_script], 
-            cwd="/home/runner/work/fastapi-testserver/fastapi-testserver",
+            cwd=os.getcwd(),
             capture_output=True, 
             text=True
         )
@@ -107,7 +107,7 @@ print("SUCCESS: Application handles permission denied gracefully")
     # Run the test script in a subprocess
     result = subprocess.run(
         ["python", "-c", test_script], 
-        cwd="/home/runner/work/fastapi-testserver/fastapi-testserver",
+        cwd=os.getcwd(),
         capture_output=True, 
         text=True
     )
@@ -160,7 +160,7 @@ print("SUCCESS: Database initialization is idempotent")
         # Run the test script in a subprocess
         result = subprocess.run(
             ["python", "-c", test_script], 
-            cwd="/home/runner/work/fastapi-testserver/fastapi-testserver",
+            cwd=os.getcwd(),
             capture_output=True, 
             text=True
         )
