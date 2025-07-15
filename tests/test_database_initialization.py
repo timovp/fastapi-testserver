@@ -15,6 +15,7 @@ def test_application_runs_without_initial_database():
         temp_db_path = os.path.join(temp_dir, "test_empty.db")
         
         # Create a test script that tests database initialization
+        # Use uv run to ensure dependencies are available
         test_script = f'''
 import os
 import sys
@@ -59,15 +60,28 @@ assert os.path.exists("{temp_db_path}"), "Database file was not created"
 print("SUCCESS: Application runs without initial database")
 '''
         
-        # Run the test script in a subprocess
+        # Run the test script in a subprocess with uv run to ensure dependencies
         # Use the directory containing main.py as working directory
         main_py_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        result = subprocess.run(
-            ["python", "-c", test_script], 
-            cwd=main_py_dir,
-            capture_output=True, 
-            text=True
-        )
+        
+        # Try uv run first, fallback to python with explicit httpx install
+        try:
+            result = subprocess.run(
+                ["uv", "run", "python", "-c", test_script], 
+                cwd=main_py_dir,
+                capture_output=True, 
+                text=True
+            )
+        except FileNotFoundError:
+            # Fallback: install httpx and run with python
+            subprocess.run(["python", "-m", "pip", "install", "httpx"], 
+                         cwd=main_py_dir, capture_output=True)
+            result = subprocess.run(
+                ["python", "-c", test_script], 
+                cwd=main_py_dir,
+                capture_output=True, 
+                text=True
+            )
         
         assert result.returncode == 0, f"Test failed with error: {result.stderr}"
         assert "SUCCESS: Application runs without initial database" in result.stdout
@@ -106,15 +120,28 @@ assert isinstance(response.json(), list), f"Expected list response, got: {type(r
 print("SUCCESS: Application handles permission denied gracefully")
 '''
     
-    # Run the test script in a subprocess
+    # Run the test script in a subprocess with uv run to ensure dependencies
     # Use the directory containing main.py as working directory
     main_py_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    result = subprocess.run(
-        ["python", "-c", test_script], 
-        cwd=main_py_dir,
-        capture_output=True, 
-        text=True
-    )
+    
+    # Try uv run first, fallback to python with explicit httpx install
+    try:
+        result = subprocess.run(
+            ["uv", "run", "python", "-c", test_script], 
+            cwd=main_py_dir,
+            capture_output=True, 
+            text=True
+        )
+    except FileNotFoundError:
+        # Fallback: install httpx and run with python
+        subprocess.run(["python", "-m", "pip", "install", "httpx"], 
+                     cwd=main_py_dir, capture_output=True)
+        result = subprocess.run(
+            ["python", "-c", test_script], 
+            cwd=main_py_dir,
+            capture_output=True, 
+            text=True
+        )
     
     assert result.returncode == 0, f"Test failed with error: {result.stderr}"
     assert "SUCCESS: Application handles permission denied gracefully" in result.stdout
@@ -161,15 +188,28 @@ for i in range(3):
 print("SUCCESS: Database initialization is idempotent")
 '''
         
-        # Run the test script in a subprocess
+        # Run the test script in a subprocess with uv run to ensure dependencies
         # Use the directory containing main.py as working directory
         main_py_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        result = subprocess.run(
-            ["python", "-c", test_script], 
-            cwd=main_py_dir,
-            capture_output=True, 
-            text=True
-        )
+        
+        # Try uv run first, fallback to python with explicit httpx install
+        try:
+            result = subprocess.run(
+                ["uv", "run", "python", "-c", test_script], 
+                cwd=main_py_dir,
+                capture_output=True, 
+                text=True
+            )
+        except FileNotFoundError:
+            # Fallback: install httpx and run with python
+            subprocess.run(["python", "-m", "pip", "install", "httpx"], 
+                         cwd=main_py_dir, capture_output=True)
+            result = subprocess.run(
+                ["python", "-c", test_script], 
+                cwd=main_py_dir,
+                capture_output=True, 
+                text=True
+            )
         
         assert result.returncode == 0, f"Test failed with error: {result.stderr}"
         assert "SUCCESS: Database initialization is idempotent" in result.stdout
