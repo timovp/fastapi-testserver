@@ -60,9 +60,11 @@ print("SUCCESS: Application runs without initial database")
 '''
         
         # Run the test script in a subprocess
+        # Use the directory containing main.py as working directory
+        main_py_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         result = subprocess.run(
             ["python", "-c", test_script], 
-            cwd=os.getcwd(),
+            cwd=main_py_dir,
             capture_output=True, 
             text=True
         )
@@ -105,9 +107,11 @@ print("SUCCESS: Application handles permission denied gracefully")
 '''
     
     # Run the test script in a subprocess
+    # Use the directory containing main.py as working directory
+    main_py_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     result = subprocess.run(
         ["python", "-c", test_script], 
-        cwd=os.getcwd(),
+        cwd=main_py_dir,
         capture_output=True, 
         text=True
     )
@@ -158,9 +162,11 @@ print("SUCCESS: Database initialization is idempotent")
 '''
         
         # Run the test script in a subprocess
+        # Use the directory containing main.py as working directory
+        main_py_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         result = subprocess.run(
             ["python", "-c", test_script], 
-            cwd=os.getcwd(),
+            cwd=main_py_dir,
             capture_output=True, 
             text=True
         )
