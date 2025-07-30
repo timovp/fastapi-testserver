@@ -38,11 +38,15 @@ if DATABASE_URL.startswith("sqlite:///"):
     db_path = DATABASE_URL.replace("sqlite:///", "")
     db_dir = os.path.dirname(db_path)
     
-    # Try to create the directory if it doesn't exist
-    if db_dir and not os.path.exists(db_dir):
+    # Try to create the directory if it doesn't exist or ensure it's actually a directory
+    if db_dir:
         try:
+            # This will fail if db_dir exists but is not a directory, or if we can't create it
             os.makedirs(db_dir, exist_ok=True)
-        except (PermissionError, OSError):
+            # Also verify it's actually a directory we can write to
+            if not os.path.isdir(db_dir):
+                raise OSError(f"{db_dir} exists but is not a directory")
+        except (PermissionError, OSError, FileExistsError):
             # Fallback to local directory if we can't create the default path
             fallback_db = "items.db"
             DATABASE_URL = f"sqlite:///{fallback_db}"

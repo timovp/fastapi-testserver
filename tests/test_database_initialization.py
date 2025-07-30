@@ -94,8 +94,8 @@ def test_application_handles_permission_denied_database_path():
 import os
 import sys
 
-# Set environment to use an inaccessible path
-os.environ["DATABASE_URL"] = "sqlite:////root/protected/items.db"
+# Set environment to use an inaccessible path (dev/null is a device file, not a directory)
+os.environ["DATABASE_URL"] = "sqlite:////dev/null/items.db"
 os.environ["MY_API_KEY"] = "test_permission_key"
 
 from main import app, DATABASE_URL
