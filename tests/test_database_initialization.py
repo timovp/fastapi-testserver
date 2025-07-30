@@ -125,6 +125,7 @@ print("SUCCESS: Application handles permission denied gracefully")
     main_py_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
     # Try uv run first, fallback to python with explicit httpx install
+    result = None
     try:
         result = subprocess.run(
             ["uv", "run", "python", "-c", test_script], 
@@ -132,7 +133,14 @@ print("SUCCESS: Application handles permission denied gracefully")
             capture_output=True, 
             text=True
         )
+        # If uv run fails, fall back to pip install method
+        if result.returncode != 0:
+            result = None
     except FileNotFoundError:
+        # uv command not found
+        result = None
+    
+    if result is None:
         # Fallback: install httpx and run with python
         subprocess.run(["python", "-m", "pip", "install", "httpx"], 
                      cwd=main_py_dir, capture_output=True)
