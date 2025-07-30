@@ -141,9 +141,11 @@ print("SUCCESS: Application handles permission denied gracefully")
         result = None
     
     if result is None:
-        # Fallback: install httpx and run with python
-        subprocess.run(["python", "-m", "pip", "install", "httpx"], 
-                     cwd=main_py_dir, capture_output=True)
+        # Fallback: install all required dependencies and run with python
+        dependencies = ["httpx", "fastapi", "sqlmodel", "uvicorn"]
+        for dep in dependencies:
+            subprocess.run(["python", "-m", "pip", "install", dep], 
+                         cwd=main_py_dir, capture_output=True)
         result = subprocess.run(
             ["python", "-c", test_script], 
             cwd=main_py_dir,
